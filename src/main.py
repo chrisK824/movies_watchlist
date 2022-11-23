@@ -4,7 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import database_crud, db_models
 from database import SessionLocal, engine
-from schemas import Movie, MovieDetails
+from schemas import Movie, MovieDetails, MovieWatch
 from typing import List
 
 db_models.Base.metadata.create_all(bind=engine)
@@ -54,8 +54,38 @@ def get_movies(db: Session = Depends(movies_watchlist_db)):
     Returns all movies from watchlist.
     """
     try:
-        result = []
-        return result
+        return database_crud.get_movies(db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
+@moviesWatchListAPI.get("/v1/movies/{movie_id}", response_model=MovieDetails, summary ="Get a movie from watchlist by its ID", tags=["Movies"])
+def get_movie(movie_id : int, db: Session = Depends(movies_watchlist_db)):
+    """
+    Returns a movie from watchlist
+    """
+    try:
+        return database_crud.get_movie(db, movie_id=movie_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
+@moviesWatchListAPI.post("/v1/movies", response_model=MovieDetails, summary="Add a movie in the watchlist", tags=["Movies"])
+def post_movie(movie : Movie, db: Session = Depends(movies_watchlist_db)):
+    """
+    Posts a movie in the watchlist.
+    """
+    try:
+        return database_crud.add_movie(db, movie)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
+@moviesWatchListAPI.put("/v1/movies/{movie_id}", response_model=MovieDetails, summary="Mark a movie in the watchlist as watched or unwatched", tags=["Movies"])
+def watch_movie(movie_id : int, watch : MovieWatch, db: Session = Depends(movies_watchlist_db)):
+    """
+    Marks a movie in the watchlist
+    as watched or unwatched.
+    """
+    try:
+        return database_crud.update_movie(db, movie_id=movie_id, watch=watch)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
@@ -65,8 +95,7 @@ def get_watched_movies(db: Session = Depends(movies_watchlist_db)):
     Returns watched movies from watchlist.
     """
     try:
-        result = []
-        return result
+        return database_crud.get_watched_movies(db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
@@ -81,28 +110,6 @@ def get_upcoming_movies(db: Session = Depends(movies_watchlist_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
-@moviesWatchListAPI.get("/v1/movies/{movie_id}", response_model=MovieDetails, summary ="Get a movie from watchlist by its ID", tags=["Movies"])
-def get_movie(movie_id : int, db: Session = Depends(movies_watchlist_db)):
-    """
-    Returns a movie from watchlist
-    """
-    try:
-        result = []
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-@moviesWatchListAPI.post("/v1/movies", response_model=MovieDetails, summary="Add a movie in the watchlist", tags=["Movies"])
-def post_movie(movie : Movie, db: Session = Depends(movies_watchlist_db)):
-    """
-    Posts a movie in the watchlist.
-    """
-    try:
-        result = {}
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
 @moviesWatchListAPI.get("/v1/movies/search", response_model=List[MovieDetails], summary ="Search for movies in watchlist based on title keyword", tags=["Movies"])
 def movies_search(keyword : str, db: Session = Depends(movies_watchlist_db)):
     """
@@ -112,18 +119,6 @@ def movies_search(keyword : str, db: Session = Depends(movies_watchlist_db)):
     """
     try:
         result = []
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-@moviesWatchListAPI.put("/v1/movies/{movie_id}", response_model=MovieDetails, summary="Mark a movie in the watchlist as watched", tags=["Movies"])
-def watch_movie(movie_id : int, db: Session = Depends(movies_watchlist_db)):
-    """
-    Marks a movie in the watchlist
-    as watched.
-    """
-    try:
-        result = {}
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")

@@ -1,20 +1,23 @@
 from pydantic import BaseModel
-from typing import Optional, List, Union
-from datetime import datetime
+from datetime import datetime, date
+from typing import Optional
 
 class Movie(BaseModel):
     title: str
-    release_date : datetime
+    release_date : date
     class Config:
         orm_mode = True
 
 class MovieDetails(Movie):
     id : int
-    title: str
-    release_date : datetime
     added_in_watchlist : datetime
     watched : bool
-    watched_date : datetime
+    watched_date : Optional[datetime] = None
+    class Config:
+        orm_mode = True
+
+class MovieWatch(BaseModel):
+    value : bool
     class Config:
         orm_mode = True
 
