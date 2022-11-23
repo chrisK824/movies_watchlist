@@ -1,0 +1,47 @@
+#!/bin/bash
+
+if [ "$(systemctl is-active movies-watchlist)" = "active" ]
+then
+    echo "movies-watchlist service is $(systemctl is-active movies-watchlist), stopping"
+    systemctl stop movies-watchlist.service
+fi
+
+package_dir='/usr/share/movies-watchlist/'
+python_virtual_env='python_venv'
+
+# create virtual environment and install utilities
+echo "Creating python virtual environment"
+/usr/bin/python3 -m venv ${package_dir}${python_virtual_env}
+echo "Activating python virtual environment"
+source ${package_dir}${python_virtual_env}/bin/activate
+echo "Installing python dependencies in virtual environment"
+pip3 install -r /usr/share/movies-watchlist/requirements.txt
+
+# create movies-watchlist service file
+cat <<EOF > /etc/systemd/system/movies-watchlist.service
+[Unit]
+Description=The Movies Watchlist Service
+After=network.target
+
+[Service]
+ExecStart=${package_dir}${python_virtual_env}/bin/python3 main.py
+WorkingDirectory=${package_dir}
+StandardOutput=inherit
+StandardError=inherit
+Restart=on-failure
+RestartSec=10
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+
+
+# reload and start systemd services
+echo "Systemd daemon reload"
+systemctl daemon-reload
+echo "Enabling movies-watchlist service"
+systemctl enable movies-watchlist.service
+echo "Starting movies-watchlist service"
+systemctl start movies-watchlist.service
