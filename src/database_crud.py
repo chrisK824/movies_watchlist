@@ -16,17 +16,21 @@ def add_movie(db: Session, movie: Movie):
     db.refresh(db_movie)
     return db_movie
 
+
 def get_movies(db: Session):
     movies = list(db.query(Movies).all())
     return movies
 
+
 def update_movie(db: Session, movie_id: int, watch: MovieWatch):
     movie_cursor = db.query(Movies).filter(Movies.id == movie_id)
     if not movie_cursor.first():
-        raise ValueError(f"There is no movie with ID {movie_id} in the watchlist")
+        raise ValueError(
+            f"There is no movie with ID {movie_id} in the watchlist")
 
     if watch.value and movie_cursor.first().release_date > datetime.now():
-        raise TooSoonException(f"This movie cannot be watched as it isn't released yet!")
+        raise TooSoonException(
+            f"This movie cannot be watched as it isn't released yet!")
     movie_cursor.update(
         {
             Movies.watched: watch.value,
