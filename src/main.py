@@ -2,7 +2,8 @@ import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, Query
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-import database_crud, db_models
+import  db_models
+import database_crud as db_crud
 from database import SessionLocal, engine
 from schemas import Movie, MovieDetails, MovieWatch
 from typing import List
@@ -49,22 +50,12 @@ moviesWatchListAPI = FastAPI(
 moviesWatchListAPI.add_middleware(CORSMiddleware, allow_origins=['*'])
 
 @moviesWatchListAPI.get("/v1/movies", response_model=List[MovieDetails], summary ="Get all movies from watchlist", tags=["Movies"])
-def get_movies(db: Session = Depends(movies_watchlist_db)):
+def get_all_movies(db: Session = Depends(movies_watchlist_db)):
     """
     Returns all movies from watchlist.
     """
     try:
-        return database_crud.get_movies(db)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-@moviesWatchListAPI.get("/v1/movies/{movie_id}", response_model=MovieDetails, summary ="Get a movie from watchlist by its ID", tags=["Movies"])
-def get_movie(movie_id : int, db: Session = Depends(movies_watchlist_db)):
-    """
-    Returns a movie from watchlist
-    """
-    try:
-        return database_crud.get_movie(db, movie_id=movie_id)
+        return db_crud.get_movies(db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
@@ -74,7 +65,7 @@ def post_movie(movie : Movie, db: Session = Depends(movies_watchlist_db)):
     Posts a movie in the watchlist.
     """
     try:
-        return database_crud.add_movie(db, movie)
+        return db_crud.add_movie(db, movie)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
@@ -85,7 +76,11 @@ def watch_movie(movie_id : int, watch : MovieWatch, db: Session = Depends(movies
     as watched or unwatched.
     """
     try:
-        return database_crud.update_movie(db, movie_id=movie_id, watch=watch)
+        return db_crud.update_movie(db, movie_id=movie_id, watch=watch)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=f"{e}")
+    except db_crud.TooSoonException as e:
+        raise HTTPException(status_code=403, detail=f"{e}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
@@ -95,7 +90,7 @@ def get_watched_movies(db: Session = Depends(movies_watchlist_db)):
     Returns watched movies from watchlist.
     """
     try:
-        return database_crud.get_watched_movies(db)
+        return db_crud.get_watched_movies(db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
@@ -105,8 +100,7 @@ def get_upcoming_movies(db: Session = Depends(movies_watchlist_db)):
     Returns upcoming movies from watchlist.
     """
     try:
-        result = []
-        return result
+        return db_crud.get_upcoming_movies(db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
@@ -118,8 +112,7 @@ def movies_search(keyword : str, db: Session = Depends(movies_watchlist_db)):
     in their title
     """
     try:
-        result = []
-        return result
+        return db_crud.search_movies(db, keyword=keyword)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
