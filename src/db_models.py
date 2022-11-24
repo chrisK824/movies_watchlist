@@ -6,7 +6,7 @@ from database import Base
 class Movies(Base):
     __tablename__ = "movies"
     # autoincreament id for each movie insertion
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=False)
     title = Column(String)
     release_date = Column(DateTime)
     added_in_watchlist = Column(DateTime, default=func.now())
