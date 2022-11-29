@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-# from sqlalchemy.sql import text
 from db_models import Movies
 from schemas import Movie, MovieWatch
 from datetime import datetime
