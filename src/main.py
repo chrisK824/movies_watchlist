@@ -52,10 +52,10 @@ moviesWatchListAPI = FastAPI(
 moviesWatchListAPI.add_middleware(CORSMiddleware, allow_origins=['*'])
 
 
-@moviesWatchListAPI.get("/v1/movies", response_model=List[MovieDetails], summary="Get all movies from watchlist", tags=["Movies"])
+@moviesWatchListAPI.get("/v1/movies", response_model=List[MovieDetails], summary="Get all movies", tags=["Movies"])
 def get_all_movies(db: Session = Depends(get_db)):
     """
-    Returns all movies from watchlist.
+    Returns all movies.
     """
     try:
         return db_crud.get_movies(db)
@@ -64,13 +64,26 @@ def get_all_movies(db: Session = Depends(get_db)):
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@moviesWatchListAPI.post("/v1/movies", response_model=MovieDetails, summary="Add a movie in the watchlist", tags=["Movies"])
+@moviesWatchListAPI.post("/v1/movies", response_model=MovieDetails, summary="Add a movie", tags=["Movies"])
 def post_movie(movie: Movie, db: Session = Depends(get_db)):
     """
-    Posts a movie in the watchlist.
+    Posts a movie.
     """
     try:
         return db_crud.add_movie(db, movie)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
+@moviesWatchListAPI.get("/v1/movies/{movie_id}", response_model=MovieDetails, summary="Get a movie by ID", tags=["Movies"])
+def get_movie_by_id(movie_id: int, db: Session = Depends(get_db)):
+    """
+    Returns a movie by ID.
+    """
+    try:
+        return db_crud.get_movie(db, movie_id=movie_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=f"{e}")
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
