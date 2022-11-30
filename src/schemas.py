@@ -15,10 +15,12 @@ class MovieDetails(Movie):
 class MovieWatch(BaseModel):
     value: bool
 
-class User(BaseModel):
+class UserSignUp(BaseModel):
     email : str
     username : str
     password : str
+
+class User(UserSignUp):
     register_date : datetime
     register_activated : bool
 

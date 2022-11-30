@@ -3,6 +3,7 @@ from sqlalchemy.sql import func
 from database import Base
 from sqlalchemy.orm import relationship
 
+
 class Movie(Base):
     __tablename__ = "movies"
     # autoincreament id for each movie insertion
@@ -11,6 +12,7 @@ class Movie(Base):
     release_date = Column(DateTime)
 
     watchlist = relationship("Watchlist", back_populates="movie")
+
 
 class User(Base):
     __tablename__ = "users"
@@ -21,6 +23,7 @@ class User(Base):
     register_activated = Column(Boolean, default=False)
 
     watchlist = relationship("Watchlist", back_populates="user")
+
 
 class Watchlist(Base):
     __tablename__ = "watchlists"
