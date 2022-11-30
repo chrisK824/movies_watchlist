@@ -53,13 +53,13 @@ moviesWatchListAPI = FastAPI(
 
 moviesWatchListAPI.add_middleware(CORSMiddleware, allow_origins=['*'])
 
-@moviesWatchListAPI.get("/v1/signup", summary="Register a user", tags=["Users"])
+@moviesWatchListAPI.post("/v1/signup", summary="Register a user", tags=["Users"])
 def create_user(user: UserSignUp, db: Session = Depends(get_db)):
     """
     Registers a user.
     """
     try:
-        db_crud.add_user(db)
+        db_crud.add_user(db, user)
         # TODO : actually send a verification email
         return {
             "resut": "You have successfully signed up. An verification email has been sent to your email address with a link to activate your acount."

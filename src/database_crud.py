@@ -1,16 +1,31 @@
 from sqlalchemy.orm import Session
 from db_models import Movie
 from schemas import Movie, UserSignUp
-# from datetime import datetime
+from passlib.context import CryptContext
+from datetime import datetime
 
 
 class TooSoonException(Exception):
     pass
 
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
 def add_user(db: Session, user: UserSignUp):
-    user = UserSignUp()
+    user = UserSignUp(email=user.email, username=user.username,
+                      password=get_password_hash(user.password))
     db.add(user)
     db.commit()
+
 
 def add_movie(db: Session, movie: Movie):
     db_movie = Movie(title=movie.title, release_date=movie.release_date)
@@ -19,9 +34,11 @@ def add_movie(db: Session, movie: Movie):
     db.refresh(db_movie)
     return db_movie
 
+
 def get_movies(db: Session):
     movies = list(db.query(Movie).all())
     return movies
+
 
 def get_movie(db: Session, movie_id: int):
     movie = db.query(Movie).filter(Movie.id == movie_id).first()
@@ -29,6 +46,7 @@ def get_movie(db: Session, movie_id: int):
         raise ValueError(
             f"There is no movie with ID {movie_id}.")
     return movie
+
 
 def delete_movie(db: Session, movie_id: int):
     movie = db.query(Movie).filter(Movie.id == movie_id).first()
@@ -38,6 +56,7 @@ def delete_movie(db: Session, movie_id: int):
     else:
         db.delete(movie)
         db.commit()
+
 
 def search_movies(db: Session, keyword: str):
     return list(db.query(Movie).filter(Movie.title.contains(keyword)).all())
@@ -67,4 +86,3 @@ def search_movies(db: Session, keyword: str):
 
 # def get_upcoming_movies(db: Session):
 #     return list(db.query(Movie).filter(Movie.release_date > datetime.now()).all())
-

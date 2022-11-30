@@ -30,7 +30,7 @@ class Watchlist(Base):
     movie_id = Column(Integer, ForeignKey("movies.id"))
     user_email = Column(String, ForeignKey("users.email"))
     __table_args__ = (
-        PrimaryKeyConstraint("movie_id", "user_email", name="user_email_movie")
+        PrimaryKeyConstraint("movie_id", "user_email", name="user_email_movie"),
     )
     added_in_watchlist = Column(DateTime, default=func.now())
     watched = Column(Boolean, default=False)
