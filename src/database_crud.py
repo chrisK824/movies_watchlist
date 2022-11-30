@@ -1,8 +1,12 @@
 from sqlalchemy.orm import Session
-from db_models import Movie
-from schemas import Movie, UserSignUp
+from db_models import Movie, User, Watchlist
+import schemas
 from passlib.context import CryptContext
 from datetime import datetime
+from sqlalchemy.exc import IntegrityError
+
+class DuplicateError(Exception):
+    pass
 
 
 class TooSoonException(Exception):
@@ -20,14 +24,22 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def add_user(db: Session, user: UserSignUp):
-    user = UserSignUp(email=user.email, username=user.username,
-                      password=get_password_hash(user.password))
-    db.add(user)
-    db.commit()
+def add_user(db: Session, user: schemas.UserSignUp):
+    user = User(
+        email=user.email,
+        username=user.username,
+        password=get_password_hash(user.password)
+    )
+    try:
+        db.add(user)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise DuplicateError(
+                f"Email {user.email} is already attached to a registered user. Try to login.")
 
 
-def add_movie(db: Session, movie: Movie):
+def add_movie(db: Session, movie: schemas.Movie):
     db_movie = Movie(title=movie.title, release_date=movie.release_date)
     db.add(db_movie)
     db.commit()

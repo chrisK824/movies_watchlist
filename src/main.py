@@ -62,8 +62,10 @@ def create_user(user: UserSignUp, db: Session = Depends(get_db)):
         db_crud.add_user(db, user)
         # TODO : actually send a verification email
         return {
-            "resut": "You have successfully signed up. An verification email has been sent to your email address with a link to activate your acount."
+            "resut": "You have successfully signed up. A verification email has been sent to your email address with a link to activate your acount."
             }
+    except db_crud.DuplicateError as e:
+        raise HTTPException(status_code=403, detail=f"{e}")
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
