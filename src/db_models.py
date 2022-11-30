@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 class Movie(Base):
     __tablename__ = "movies"
     # autoincreament id for each movie insertion
-    id = Column(Integer, primary_key=True, index=False)
+    id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     release_date = Column(DateTime)
 
@@ -14,7 +14,7 @@ class Movie(Base):
 
 class User(Base):
     __tablename__ = "users"
-    email = Column(String, primary_key=True, index=False)
+    email = Column(String, primary_key=True, index=True)
     username = Column(String)
     password = Column(String)
     register_date = Column(DateTime, default=func.now())

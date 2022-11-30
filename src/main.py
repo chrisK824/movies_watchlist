@@ -5,18 +5,18 @@ from sqlalchemy.orm import Session
 import db_models
 import database_crud as db_crud
 from database import SessionLocal, engine
-from schemas import Movie, MovieDetails, MovieWatch
+from schemas import Movie, MovieDetails, MovieWatch, User, Watchlist
 from typing import List
 
 db_models.Base.metadata.create_all(bind=engine)
 
 
-def movies_watchlist_db():
-    reviews_db = SessionLocal()
+def get_db():
+    movies_watchlists_db = SessionLocal()
     try:
-        yield reviews_db
+        yield movies_watchlists_db
     finally:
-        reviews_db.close()
+        movies_watchlists_db.close()
 
 
 description = """
@@ -53,7 +53,7 @@ moviesWatchListAPI.add_middleware(CORSMiddleware, allow_origins=['*'])
 
 
 @moviesWatchListAPI.get("/v1/movies", response_model=List[MovieDetails], summary="Get all movies from watchlist", tags=["Movies"])
-def get_all_movies(db: Session = Depends(movies_watchlist_db)):
+def get_all_movies(db: Session = Depends(get_db)):
     """
     Returns all movies from watchlist.
     """
@@ -65,7 +65,7 @@ def get_all_movies(db: Session = Depends(movies_watchlist_db)):
 
 
 @moviesWatchListAPI.post("/v1/movies", response_model=MovieDetails, summary="Add a movie in the watchlist", tags=["Movies"])
-def post_movie(movie: Movie, db: Session = Depends(movies_watchlist_db)):
+def post_movie(movie: Movie, db: Session = Depends(get_db)):
     """
     Posts a movie in the watchlist.
     """
@@ -77,7 +77,7 @@ def post_movie(movie: Movie, db: Session = Depends(movies_watchlist_db)):
 
 
 @moviesWatchListAPI.put("/v1/movies/{movie_id}", response_model=MovieDetails, summary="Mark a movie in the watchlist as watched or unwatched", tags=["Movies"])
-def watch_movie(movie_id: int, watch: MovieWatch, db: Session = Depends(movies_watchlist_db)):
+def watch_movie(movie_id: int, watch: MovieWatch, db: Session = Depends(get_db)):
     """
     Marks a movie in the watchlist
     as watched or unwatched.
@@ -94,7 +94,7 @@ def watch_movie(movie_id: int, watch: MovieWatch, db: Session = Depends(movies_w
 
 
 @moviesWatchListAPI.get("/v1/movies/watched", response_model=List[MovieDetails], summary="Get watched movies from watchlist", tags=["Movies"])
-def get_watched_movies(db: Session = Depends(movies_watchlist_db)):
+def get_watched_movies(db: Session = Depends(get_db)):
     """
     Returns watched movies from watchlist.
     """
@@ -106,7 +106,7 @@ def get_watched_movies(db: Session = Depends(movies_watchlist_db)):
 
 
 @moviesWatchListAPI.get("/v1/movies/upcoming", response_model=List[MovieDetails], summary="Get upcoming movies from watchlist", tags=["Movies"])
-def get_upcoming_movies(db: Session = Depends(movies_watchlist_db)):
+def get_upcoming_movies(db: Session = Depends(get_db)):
     """
     Returns upcoming movies from watchlist.
     """
@@ -118,7 +118,7 @@ def get_upcoming_movies(db: Session = Depends(movies_watchlist_db)):
 
 
 @moviesWatchListAPI.get("/v1/movies/search", response_model=List[MovieDetails], summary="Search for movies in watchlist based on title keyword", tags=["Movies"])
-def movies_search(keyword: str, db: Session = Depends(movies_watchlist_db)):
+def movies_search(keyword: str, db: Session = Depends(get_db)):
     """
     Returns all movies in watchlist 
     that include the given keyword
