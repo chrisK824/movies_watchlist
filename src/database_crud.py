@@ -73,6 +73,10 @@ def delete_movie(db: Session, movie_id: int):
 def search_movies(db: Session, keyword: str):
     return list(db.query(Movie).filter(Movie.title.contains(keyword)).all())
 
+def get_upcoming_movies(db: Session):
+    return list(db.query(Movie).filter(Movie.release_date > datetime.now()).all())
+
+
 # def update_movie(db: Session, movie_id: int, watch: MovieWatch):
 #     movie_cursor = db.query(Movie).filter(Movie.id == movie_id)
 #     if not movie_cursor.first():
@@ -96,5 +100,3 @@ def search_movies(db: Session, keyword: str):
 #     return list(db.query(Movie).filter(Movie.watched == True).all())
 
 
-# def get_upcoming_movies(db: Session):
-#     return list(db.query(Movie).filter(Movie.release_date > datetime.now()).all())

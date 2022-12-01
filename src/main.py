@@ -134,6 +134,16 @@ def movies_search(keyword: str, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
+@moviesWatchListAPI.get("/v1/movies/upcoming/", response_model=List[MovieDetails], summary="Get upcoming movies", tags=["Movies"])
+def get_upcoming_movies(db: Session = Depends(get_db)):
+    """
+    Returns upcoming movies.
+    """
+    try:
+        return db_crud.get_upcoming_movies(db)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 # @moviesWatchListAPI.put("/v1/movies/{movie_id}", response_model=MovieDetails, summary="Mark a movie in the watchlist as watched or unwatched", tags=["Movies"])
 # def watch_movie(movie_id: int, watch: MovieWatch, db: Session = Depends(get_db)):
@@ -164,16 +174,7 @@ def movies_search(keyword: str, db: Session = Depends(get_db)):
 #             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-# @moviesWatchListAPI.get("/v1/movies/upcoming", response_model=List[MovieDetails], summary="Get upcoming movies from watchlist", tags=["Movies"])
-# def get_upcoming_movies(db: Session = Depends(get_db)):
-#     """
-#     Returns upcoming movies from watchlist.
-#     """
-#     try:
-#         return db_crud.get_upcoming_movies(db)
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
 
 
 if __name__ == '__main__':
