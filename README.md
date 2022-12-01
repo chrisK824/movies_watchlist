@@ -4,7 +4,7 @@
 * fastAPI web framework
 * sqlite3 database
 
-##### Docker installation and run (tests and server)
+##### Docker installation and run server
 * `docker build -t movies_watchlist .`
 * `docker run -d -p 9999:9999 movies_watchlist`
 * Docker container will firstly run the automated tests and then deploy the web app
@@ -12,20 +12,15 @@
 * Access the API documentation at `localhost:9999/v1/documentation`
 
 
-#####  Native installation and run (tests and server)
+#####  Native installation and run server
 * Use an environment with `python3` installed
 * Open a terminal and navigate to project's main folder
 * Create a python virtual environment by running the following command:
 `python3.9 -m venv python_venv`
 * Activate the python virtual environment by running the command:
 `source python_venv/bin/activate`
-* Install requirements of testing environment by running the following command:
-`pip3 install -r testing_requirements.txt`
 * Install requirements of app by running the following command:
 `pip3 install -r requirements.txt`
-* Run the automated tests by invoking the `pytest` utility by running the following command:
-`pytest --html=movies_watchlist_api_report.html`
-* When the test suite has been completed you can see the results by in the html report that has been generated at the same folder named `movies_watchlist_api_report.html`
 *  Run the server `python3 src/main.py`
 *  Access the API at `localhost:9999/v1`
 *  Access the API documentation at `localhost:9999/v1/documentation`

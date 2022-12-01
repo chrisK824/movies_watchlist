@@ -1,23 +1,12 @@
-FROM debian:bullseye
+FROM python:3.9
 
-# default shell to bash
-SHELL ["/bin/bash", "--login", "-c"]
-ENV TERM=xterm
+RUN mkdir -p /app
+WORKDIR /app
+COPY ./src/* .
+COPY ./requirements.txt .
 
-RUN apt-get update
-# Debian dependencies
-RUN apt-get install --yes sqlite3 python3 python3-pip
-# Copy source code and python dependencies
-RUN mkdir -p /usr/share/movies-watchlist
-RUN mkdir -p /opt
-COPY ./src/* /usr/share/movies-watchlist/
-COPY ./requirements.txt /usr/share/movies-watchlist/requirements.txt
-COPY docker_entrypoint /opt/docker_entrypoint
+RUN python3 -m pip install -r requirements.txt
 
-RUN python3 -m pip install -r /usr/share/movies-watchlist/requirements.txt
-
-RUN chmod -R +x /usr/share/movies-watchlist/
-RUN chmod +x /opt/docker_entrypoint
 EXPOSE 9999
 
-ENTRYPOINT ["/opt/docker_entrypoint"]
+CMD [ "python3", "main.py" ]
