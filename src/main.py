@@ -121,7 +121,7 @@ def delete_movie_by_id(movie_id: int, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
-@moviesWatchListAPI.get("/v1/movies/search", response_model=List[MovieDetails], summary="Search for movies based on title keyword", tags=["Movies"])
+@moviesWatchListAPI.get("/v1/movies/search/", response_model=List[MovieDetails], summary="Search for movies based on title keyword", tags=["Movies"])
 def movies_search(keyword: str, db: Session = Depends(get_db)):
     """
     Returns all movies 
