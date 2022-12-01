@@ -12,11 +12,9 @@ RUN mkdir -p /usr/share/movies-watchlist
 RUN mkdir -p /opt
 COPY ./src/* /usr/share/movies-watchlist/
 COPY ./requirements.txt /usr/share/movies-watchlist/requirements.txt
-COPY ./testing_requirements.txt /usr/share/movies-watchlist/testing_requirements.txt
 COPY docker_entrypoint /opt/docker_entrypoint
 
 RUN python3 -m pip install -r /usr/share/movies-watchlist/requirements.txt
-RUN python3 -m pip install -r /usr/share/movies-watchlist/testing_requirements.txt
 
 RUN chmod -R +x /usr/share/movies-watchlist/
 RUN chmod +x /opt/docker_entrypoint

@@ -7,29 +7,36 @@ class Movie(BaseModel):
     title: str
     release_date: date
 
+
 class MovieDetails(Movie):
     id: int
+
     class Config:
         orm_mode = True
+
 
 class MovieWatch(BaseModel):
     value: bool
 
+
 class UserSignUp(BaseModel):
-    email : str
-    username : str
-    password : str
+    email: str
+    username: str
+    password: str
+
 
 class User(UserSignUp):
-    register_date : datetime
-    register_activated : bool
+    register_date: datetime
+    register_activated: bool
 
     class Config:
         orm_mode = True
 
+
 class WatchlistInput(BaseModel):
-    movie_id : int
-    user_email : str
+    movie_id: int
+    user_email: str
+
 
 class Watchlist(WatchlistInput):
     added_in_watchlist: datetime
@@ -39,11 +46,11 @@ class Watchlist(WatchlistInput):
     class Config:
         orm_mode = True
 
-class WatchlistMovie(BaseModel):
-    title : str
-    release_date : datetime
-    movie_id : int
-    added_in_watchlist: datetime
-    watched : bool
-    watched_date : Optional[datetime] = None
 
+class WatchlistMovie(BaseModel):
+    title: str
+    release_date: datetime
+    movie_id: int
+    added_in_watchlist: datetime
+    watched: bool
+    watched_date: Optional[datetime] = None

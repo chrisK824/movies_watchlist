@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import text
 
+
 class DuplicateError(Exception):
     pass
 
@@ -37,7 +38,7 @@ def add_user(db: Session, user: schemas.UserSignUp):
     except IntegrityError:
         db.rollback()
         raise DuplicateError(
-                f"Email {user.email} is already attached to a registered user. Try to login.")
+            f"Email {user.email} is already attached to a registered user. Try to login.")
 
 
 def add_movie(db: Session, movie: schemas.Movie):
@@ -74,6 +75,7 @@ def delete_movie(db: Session, movie_id: int):
 def search_movies(db: Session, keyword: str):
     return list(db.query(Movie).filter(Movie.title.contains(keyword)).all())
 
+
 def get_upcoming_movies(db: Session):
     return list(db.query(Movie).filter(Movie.release_date > datetime.now()).all())
 
@@ -97,17 +99,19 @@ def add_movie_to_watchlist(db: Session, movie_id: int, user_email: str):
         db.rollback()
         user = user_cursor.first()
         raise DuplicateError(
-                f"{user.username} you have already movie {movie_id} in your watchlist.")
+            f"{user.username} you have already movie {movie_id} in your watchlist.")
 
     return watchlist_entry
+
 
 def remove_movie_from_watchlist(db: Session, movie_id: int, user_email: str):
     user = db.query(User).filter(User.email == user_email).first()
     if not user:
         raise ValueError(
-            f"There is no user registered with email {user_email}.")    
+            f"There is no user registered with email {user_email}.")
 
-    watchlist_entry = db.query(Watchlist).filter(Watchlist.movie_id == movie_id).first()
+    watchlist_entry = db.query(Watchlist).filter(
+        Watchlist.movie_id == movie_id).first()
     if not watchlist_entry:
         raise ValueError(
             f"{user.username}, there is no movie with ID {movie_id} in your watchlist.")
@@ -115,33 +119,13 @@ def remove_movie_from_watchlist(db: Session, movie_id: int, user_email: str):
     db.delete(watchlist_entry)
     db.commit()
 
-def get_watchlist_movies(db: Session, user_email: str, watched : bool):
+
+def get_watchlist_movies(db: Session, user_email: str, watched: bool):
     query = """SELECT * FROM 
     movies JOIN watchlists ON watchlists.movie_id = movies.id 
     WHERE watchlists.user_email = :user_email AND 
     watchlists.watched = :watched;"""
 
-    movies = list(db.execute(text(query), [{"user_email": user_email, "watched": watched}]).fetchall())
+    movies = list(db.execute(
+        text(query), [{"user_email": user_email, "watched": watched}]).fetchall())
     return movies
-
-
-# def update_movie(db: Session, movie_id: int, watch: MovieWatch):
-#     movie_cursor = db.query(Movie).filter(Movie.id == movie_id)
-#     if not movie_cursor.first():
-#         raise ValueError(
-#             f"There is no movie with ID {movie_id} in the watchlist.")
-
-#     if watch.value and movie_cursor.first().release_date > datetime.now():
-#         raise TooSoonException(
-#             f"This movie cannot be watched as it isn't released yet!")
-#     movie_cursor.update(
-#         {
-#             Movie.watched: watch.value,
-#             Movie.watched_date: datetime.now() if watch.value else None
-#         }
-#     )
-#     db.commit()
-#     return db.query(Movie).filter(Movie.id == movie_id).first()
-
-
-

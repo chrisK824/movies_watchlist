@@ -2,8 +2,5 @@
 set -e
 set -x
 
-echo "Starting automated tests."
-pytest /usr/share/movies-watchlist/ -s
-
 echo "# Starting server..."
 python3 /usr/share/movies-watchlist/main.py
