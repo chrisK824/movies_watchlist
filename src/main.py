@@ -172,6 +172,21 @@ def get_watchlist_movies(user_email: str, watched : Optional[bool] = False, db: 
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
+@moviesWatchListAPI.delete("/v1/watchlist/movies", summary="Remove a movie from user's watchlist", tags=["Watchlists"])
+def remove_watchlist_movie(watchlistInput: WatchlistInput, db: Session = Depends(get_db)):
+    """
+    Returns movies from user's watchlist.
+    """
+    try:
+        db_crud.remove_movie_from_watchlist(db, movie_id=watchlistInput.movie_id, user_email=watchlistInput.user_email)
+        return {"result" : f"Movie with ID {watchlistInput.movie_id} has been removed from your watchlist."}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=f"{e}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
+
 
 
 
@@ -187,18 +202,6 @@ def get_watchlist_movies(user_email: str, watched : Optional[bool] = False, db: 
 #         raise HTTPException(status_code=404, detail=f"{e}")
 #     except db_crud.TooSoonException as e:
 #         raise HTTPException(status_code=403, detail=f"{e}")
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-# @moviesWatchListAPI.get("/v1/movies/watched", response_model=List[MovieDetails], summary="Get watched movies from watchlist", tags=["Movies"])
-# def get_watched_movies(db: Session = Depends(get_db)):
-#     """
-#     Returns watched movies from watchlist.
-#     """
-#     try:
-#         return db_crud.get_watched_movies(db)
 #     except Exception as e:
 #         raise HTTPException(
 #             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")

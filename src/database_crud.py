@@ -4,7 +4,7 @@ import schemas
 from passlib.context import CryptContext
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
-from datetime import date
+from sqlalchemy import text
 
 class DuplicateError(Exception):
     pass
@@ -101,7 +101,20 @@ def add_movie_to_watchlist(db: Session, movie_id: int, user_email: str):
 
     return watchlist_entry
 
-from sqlalchemy import text
+def remove_movie_from_watchlist(db: Session, movie_id: int, user_email: str):
+    user = db.query(User).filter(User.email == user_email).first()
+    if not user:
+        raise ValueError(
+            f"There is no user registered with email {user_email}.")    
+
+    watchlist_entry = db.query(Watchlist).filter(Watchlist.movie_id == movie_id).first()
+    if not watchlist_entry:
+        raise ValueError(
+            f"{user.username}, there is no movie with ID {movie_id} in your watchlist.")
+
+    db.delete(watchlist_entry)
+    db.commit()
+
 def get_watchlist_movies(db: Session, user_email: str, watched : bool):
     query = """SELECT * FROM 
     movies JOIN watchlists ON watchlists.movie_id = movies.id 
@@ -130,8 +143,5 @@ def get_watchlist_movies(db: Session, user_email: str, watched : bool):
 #     db.commit()
 #     return db.query(Movie).filter(Movie.id == movie_id).first()
 
-
-# def get_watched_movies(db: Session):
-#     return list(db.query(Movie).filter(Movie.watched == True).all())
 
 
