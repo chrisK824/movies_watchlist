@@ -1,12 +1,12 @@
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import db_models
 import database_crud as db_crud
 from database import SessionLocal, engine
-from schemas import UserSignUp, Movie, MovieDetails
-from typing import List
+from schemas import UserSignUp, Movie, MovieDetails, WatchlistInput, Watchlist
+from typing import List, Optional
 
 db_models.Base.metadata.create_all(bind=engine)
 
@@ -144,6 +144,36 @@ def get_upcoming_movies(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
+@moviesWatchListAPI.put("/v1/watchlist/movies", response_model=Watchlist, summary="Add a movie in user's watchlist", tags=["Watchlists"])
+def add_movie_to_watchlist(watchlistInput: WatchlistInput, db: Session = Depends(get_db)):
+    """
+    Adds a movie in the user's watchlist
+    """
+    try:
+        return db_crud.add_movie_to_watchlist(db, movie_id=watchlistInput.movie_id, user_email=watchlistInput.user_email)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=f"{e}")
+    except db_crud.DuplicateError as e:
+        raise HTTPException(status_code=403, detail=f"{e}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
+@moviesWatchListAPI.get("/v1/watchlist/movies", response_model=List[MovieDetails], summary="Get movies from user's watchlist", tags=["Watchlists"])
+def get_watchlist_movies(user_email: str, watched : Optional[bool] = False, db: Session = Depends(get_db)):
+    """
+    Returns movies from user's watchlist.
+    """
+    try:
+        return db_crud.get_watchlist_movies(db, user_email, watched)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
+
+
+
 
 # @moviesWatchListAPI.put("/v1/movies/{movie_id}", response_model=MovieDetails, summary="Mark a movie in the watchlist as watched or unwatched", tags=["Movies"])
 # def watch_movie(movie_id: int, watch: MovieWatch, db: Session = Depends(get_db)):

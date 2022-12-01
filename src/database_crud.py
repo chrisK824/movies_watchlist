@@ -77,6 +77,47 @@ def get_upcoming_movies(db: Session):
     return list(db.query(Movie).filter(Movie.release_date > datetime.now()).all())
 
 
+def add_movie_to_watchlist(db: Session, movie_id: int, user_email: str):
+    movie_cursor = db.query(Movie).filter(Movie.id == movie_id)
+    if not movie_cursor.first():
+        raise ValueError(
+            f"There is no movie with ID {movie_id}.")
+
+    user_cursor = db.query(User).filter(User.email == user_email)
+    if not user_cursor.first():
+        raise ValueError(
+            f"There is no user registered with email {user_email}.")
+
+    watchlist_entry = Watchlist(movie_id=movie_id, user_email=user_email)
+    try:
+        db.add(watchlist_entry)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        user = user_cursor.first()
+        raise DuplicateError(
+                f"{user.username} you have already movie {movie_id} in your watchlist.")
+
+    return watchlist_entry
+
+from sqlalchemy import text
+def get_watchlist_movies(db: Session, user_email: str, watched : bool):
+#     query = """
+#     SELECT * FROM movies
+# JOIN watchlists ON movie_id
+# WHERE watchlists.user_email = '?'
+# AND watchlists.watched = "?"
+# GROUP BY movie_id;"""
+
+#     movies = db.execute(text(query, (user_email, watched,))).fetchall()
+
+    if watched:
+        movies = list(db.query(Movie).join(Watchlist).filter(Watchlist.user_email == user_email).filter(Watchlist.watched == True).all())
+    else:
+        movies = list(db.query(Movie).join(Watchlist).filter(Watchlist.user_email == user_email).all())
+    return movies
+
+
 # def update_movie(db: Session, movie_id: int, watch: MovieWatch):
 #     movie_cursor = db.query(Movie).filter(Movie.id == movie_id)
 #     if not movie_cursor.first():
