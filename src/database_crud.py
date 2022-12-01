@@ -4,6 +4,7 @@ import schemas
 from passlib.context import CryptContext
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
+from datetime import date
 
 class DuplicateError(Exception):
     pass
@@ -102,19 +103,12 @@ def add_movie_to_watchlist(db: Session, movie_id: int, user_email: str):
 
 from sqlalchemy import text
 def get_watchlist_movies(db: Session, user_email: str, watched : bool):
-#     query = """
-#     SELECT * FROM movies
-# JOIN watchlists ON movie_id
-# WHERE watchlists.user_email = '?'
-# AND watchlists.watched = "?"
-# GROUP BY movie_id;"""
+    query = """SELECT * FROM 
+    movies JOIN watchlists ON watchlists.movie_id = movies.id 
+    WHERE watchlists.user_email = :user_email AND 
+    watchlists.watched = :watched;"""
 
-#     movies = db.execute(text(query, (user_email, watched,))).fetchall()
-
-    if watched:
-        movies = list(db.query(Movie).join(Watchlist).filter(Watchlist.user_email == user_email).filter(Watchlist.watched == True).all())
-    else:
-        movies = list(db.query(Movie).join(Watchlist).filter(Watchlist.user_email == user_email).all())
+    movies = list(db.execute(text(query), [{"user_email": user_email, "watched": watched}]).fetchall())
     return movies
 
 

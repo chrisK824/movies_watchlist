@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 import db_models
 import database_crud as db_crud
 from database import SessionLocal, engine
-from schemas import UserSignUp, Movie, MovieDetails, WatchlistInput, Watchlist
+from schemas import UserSignUp, Movie, MovieDetails, WatchlistInput, Watchlist, WatchlistMovie
 from typing import List, Optional
 
 db_models.Base.metadata.create_all(bind=engine)
@@ -160,7 +160,7 @@ def add_movie_to_watchlist(watchlistInput: WatchlistInput, db: Session = Depends
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
-@moviesWatchListAPI.get("/v1/watchlist/movies", response_model=List[MovieDetails], summary="Get movies from user's watchlist", tags=["Watchlists"])
+@moviesWatchListAPI.get("/v1/watchlist/movies", response_model=List[WatchlistMovie], summary="Get movies from user's watchlist", tags=["Watchlists"])
 def get_watchlist_movies(user_email: str, watched : Optional[bool] = False, db: Session = Depends(get_db)):
     """
     Returns movies from user's watchlist.

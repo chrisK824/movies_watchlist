@@ -39,5 +39,11 @@ class Watchlist(WatchlistInput):
     class Config:
         orm_mode = True
 
+class WatchlistMovie(BaseModel):
+    title : str
+    release_date : datetime
+    movie_id : int
+    added_in_watchlist: datetime
+    watched : bool
+    watched_date : Optional[datetime] = None
 
-# WatchlistMovie = create_model("WatchlistMovie", __base__=(Watchlist, MovieDetails))
