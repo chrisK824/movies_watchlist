@@ -129,3 +129,21 @@ def get_watchlist_movies(db: Session, user_email: str, watched: bool):
     movies = list(db.execute(
         text(query), [{"user_email": user_email, "watched": watched}]).fetchall())
     return movies
+
+def get_watchlist_movie(db: Session, movie_id: int, user_email: str):
+    query = """SELECT * FROM 
+    movies JOIN watchlists ON watchlists.movie_id = movies.id 
+    WHERE watchlists.user_email = :user_email AND 
+    movies.id = :movie_id;"""
+
+    user = db.query(User).filter(User.email == user_email).first()
+    if not user:
+        raise ValueError(
+            f"There is no user registered with email {user_email}.")
+
+    movie = db.execute(
+        text(query), [{"user_email": user_email, "movie_id": movie_id}]).fetchone()
+    if not movie:
+        raise ValueError(
+            f"{user.username}, there is no movie with ID {movie_id} in your watchlist.")
+    return movie
