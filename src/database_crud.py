@@ -144,7 +144,7 @@ def remove_movie_from_watchlist(db: Session, movie_id: int, user_email: str):
     db.commit()
 
 
-def get_watchlist_movies(db: Session, user_email: str, watched: bool):
+def get_watchlist_movies(db: Session, user_email: str):
     query = """SELECT * FROM 
     movies JOIN watchlists ON watchlists.movie_id = movies.id 
     WHERE watchlists.user_email = :user_email;"""
