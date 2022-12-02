@@ -6,8 +6,8 @@ from typing import Optional
 class Movie(BaseModel):
     title: str
     release_date: date
-    category = str
-    summary = str
+    category : str
+    summary : str
 
 
 class MovieDetails(Movie):
