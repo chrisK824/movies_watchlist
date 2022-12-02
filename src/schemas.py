@@ -31,7 +31,6 @@ class User(UserSignUp):
 
 class WatchlistInput(BaseModel):
     movie_id: int
-    user_email: str
 
 
 class Watchlist(WatchlistInput):

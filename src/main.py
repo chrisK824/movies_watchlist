@@ -6,19 +6,14 @@ from sqlalchemy.orm import Session
 import db_models
 import database_crud as db_crud
 import authentication as auth
-from database import SessionLocal, engine
-from schemas import UserSignUp, Movie, MovieDetails, WatchlistInput, Watchlist, WatchlistMovie, Token
+from database import engine
+from schemas import UserSignUp, User, Movie, MovieDetails, WatchlistInput, Watchlist, WatchlistMovie, Token
 from typing import List, Optional
 
 db_models.Base.metadata.create_all(bind=engine)
 
 
-def get_db():
-    movies_watchlists_db = SessionLocal()
-    try:
-        yield movies_watchlists_db
-    finally:
-        movies_watchlists_db.close()
+
 
 
 description = """
@@ -57,7 +52,7 @@ moviesWatchListAPI.add_middleware(CORSMiddleware, allow_origins=['*'])
 
 
 @moviesWatchListAPI.post("/v1/signup", summary="Register a user", tags=["Users"])
-def create_user(user: UserSignUp, db: Session = Depends(get_db)):
+def create_user(user: UserSignUp, db: Session = Depends(db_crud.get_db)):
     """
     Registers a user.
     """
@@ -75,7 +70,7 @@ def create_user(user: UserSignUp, db: Session = Depends(get_db)):
 
 
 @moviesWatchListAPI.post("/v1/login", response_model=Token, summary="Login as a user", tags=["Users"])
-def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(db_crud.get_db)):
     """
     Logs in a user.
     """
@@ -94,7 +89,7 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
 
 
 @moviesWatchListAPI.get("/v1/movies", response_model=List[MovieDetails], summary="Get all movies", tags=["Movies"])
-def get_all_movies(db: Session = Depends(get_db)):
+def get_all_movies(db: Session = Depends(db_crud.get_db)):
     """
     Returns all movies.
     """
@@ -106,7 +101,7 @@ def get_all_movies(db: Session = Depends(get_db)):
 
 
 @moviesWatchListAPI.post("/v1/movies", response_model=MovieDetails, summary="Add a movie", tags=["Movies"])
-def post_movie(movie: Movie, db: Session = Depends(get_db)):
+def post_movie(movie: Movie, db: Session = Depends(db_crud.get_db)):
     """
     Posts a movie.
     """
@@ -118,7 +113,7 @@ def post_movie(movie: Movie, db: Session = Depends(get_db)):
 
 
 @moviesWatchListAPI.get("/v1/movies/{movie_id}", response_model=MovieDetails, summary="Get a movie by ID", tags=["Movies"])
-def get_movie_by_id(movie_id: int, db: Session = Depends(get_db)):
+def get_movie_by_id(movie_id: int, db: Session = Depends(db_crud.get_db)):
     """
     Returns a movie by ID.
     """
@@ -132,7 +127,7 @@ def get_movie_by_id(movie_id: int, db: Session = Depends(get_db)):
 
 
 @moviesWatchListAPI.delete("/v1/movies/{movie_id}", summary="Delete a movie by ID", tags=["Movies"])
-def delete_movie_by_id(movie_id: int, db: Session = Depends(get_db)):
+def delete_movie_by_id(movie_id: int, db: Session = Depends(db_crud.get_db)):
     """
     Deletes a movie by ID.
     """
@@ -147,7 +142,7 @@ def delete_movie_by_id(movie_id: int, db: Session = Depends(get_db)):
 
 
 @moviesWatchListAPI.get("/v1/movies/search/", response_model=List[MovieDetails], summary="Search for movies based on title keyword", tags=["Movies"])
-def movies_search(keyword: str, db: Session = Depends(get_db)):
+def movies_search(keyword: str, db: Session = Depends(db_crud.get_db)):
     """
     Returns all movies 
     that include the given keyword
@@ -161,7 +156,7 @@ def movies_search(keyword: str, db: Session = Depends(get_db)):
 
 
 @moviesWatchListAPI.get("/v1/movies/upcoming/", response_model=List[MovieDetails], summary="Get upcoming movies", tags=["Movies"])
-def get_upcoming_movies(db: Session = Depends(get_db)):
+def get_upcoming_movies(db: Session = Depends(db_crud.get_db)):
     """
     Returns upcoming movies.
     """
@@ -173,12 +168,12 @@ def get_upcoming_movies(db: Session = Depends(get_db)):
 
 
 @moviesWatchListAPI.post("/v1/watchlist/movies", response_model=Watchlist, summary="Add a movie in user's watchlist", tags=["Watchlists"])
-def add_movie_to_watchlist(watchlistInput: WatchlistInput, db: Session = Depends(get_db)):
+def add_movie_to_watchlist(watchlistInput: WatchlistInput, user : User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Adds a movie in the user's watchlist
     """
     try:
-        return db_crud.add_movie_to_watchlist(db, movie_id=watchlistInput.movie_id, user_email=watchlistInput.user_email)
+        return db_crud.add_movie_to_watchlist(db, movie_id=watchlistInput.movie_id, user_email=user.email)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=f"{e}")
     except db_crud.DuplicateError as e:
@@ -189,7 +184,7 @@ def add_movie_to_watchlist(watchlistInput: WatchlistInput, db: Session = Depends
 
 
 @moviesWatchListAPI.get("/v1/watchlist/movies", response_model=List[WatchlistMovie], summary="Get movies from user's watchlist", tags=["Watchlists"])
-def get_watchlist_movies(user_email: str, watched: Optional[bool] = False, db: Session = Depends(get_db)):
+def get_watchlist_movies(user_email: str, watched: Optional[bool] = False, db: Session = Depends(db_crud.get_db)):
     """
     Returns movies from user's watchlist.
     """
@@ -201,7 +196,7 @@ def get_watchlist_movies(user_email: str, watched: Optional[bool] = False, db: S
 
 
 @moviesWatchListAPI.get("/v1/watchlist/watched/movies", response_model=List[WatchlistMovie], summary="Get watched movies from user's watchlist", tags=["Watchlists"])
-def get_watchlist_watched_movies(user_email: str, db: Session = Depends(get_db)):
+def get_watchlist_watched_movies(user_email: str, db: Session = Depends(db_crud.get_db)):
     """
     Returns watched movies from user's watchlist.
     """
@@ -213,7 +208,7 @@ def get_watchlist_watched_movies(user_email: str, db: Session = Depends(get_db))
 
 
 @moviesWatchListAPI.get("/v1/watchlist/upcoming/movies", response_model=List[WatchlistMovie], summary="Get upcoming movies from user's watchlist", tags=["Watchlists"])
-def get_watchlist_upcoming_movies(user_email: str, db: Session = Depends(get_db)):
+def get_watchlist_upcoming_movies(user_email: str, db: Session = Depends(db_crud.get_db)):
     """
     Returns upcoming movies from user's watchlist.
     """
@@ -225,7 +220,7 @@ def get_watchlist_upcoming_movies(user_email: str, db: Session = Depends(get_db)
 
 
 @moviesWatchListAPI.get("/v1/watchlist/movies/{movie_id}", response_model=WatchlistMovie, summary="Get a movie from user's watchlist", tags=["Watchlists"])
-def get_watchlist_movie(movie_id: int, user_email: str, db: Session = Depends(get_db)):
+def get_watchlist_movie(movie_id: int, user_email: str, db: Session = Depends(db_crud.get_db)):
     """
     Returns a movie from user's watchlist.
     """
@@ -239,7 +234,7 @@ def get_watchlist_movie(movie_id: int, user_email: str, db: Session = Depends(ge
 
 
 @moviesWatchListAPI.delete("/v1/watchlist/movies/{movie_id}", summary="Remove a movie from user's watchlist", tags=["Watchlists"])
-def remove_watchlist_movie(movie_id: int, user_email: str, db: Session = Depends(get_db)):
+def remove_watchlist_movie(movie_id: int, user_email: str, db: Session = Depends(db_crud.get_db)):
     """
     Returns movies from user's watchlist.
     """
@@ -255,7 +250,7 @@ def remove_watchlist_movie(movie_id: int, user_email: str, db: Session = Depends
 
 
 @moviesWatchListAPI.put("/v1/watchlist/movies/{movie_id}/watch", response_model=WatchlistMovie, summary="Mark a movie from user's watchlist as watched", tags=["Watchlists"])
-def watch_movie(movie_id: int, user_email: str, db: Session = Depends(get_db)):
+def watch_movie(movie_id: int, user_email: str, db: Session = Depends(db_crud.get_db)):
     """
     Marks a movie from user's watchlist
     as watched

@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import text
 from authentication import get_password_hash, verify_password, oauth2_scheme, get_token_payload, BearAuthException
-
+from database import SessionLocal
 
 class DuplicateError(Exception):
     pass
@@ -15,6 +15,13 @@ class DuplicateError(Exception):
 class TooSoonException(Exception):
     pass
 
+
+def get_db():
+    movies_watchlists_db = SessionLocal()
+    try:
+        yield movies_watchlists_db
+    finally:
+        movies_watchlists_db.close()
 
 def add_user(db: Session, user: schemas.UserSignUp):
     user = User(
@@ -41,7 +48,7 @@ def authenticate_user(db: Session, user_email: str, password: str):
     return user
 
 
-def get_current_user(db: Session, token: str = Depends(oauth2_scheme)):
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     try:
         user_email = get_token_payload(token)
     except BearAuthException:
