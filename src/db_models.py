@@ -10,6 +10,8 @@ class Movie(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     release_date = Column(DateTime)
+    category = Column(String)
+    summary = Column(String)
 
     watchlist = relationship("Watchlist", back_populates="movie")
 
@@ -19,6 +21,9 @@ class User(Base):
     email = Column(String, primary_key=True, index=True)
     username = Column(String)
     password = Column(String)
+    name = Column(String)
+    surname = Column(String)
+    country = Column(String)
     register_date = Column(DateTime, default=func.now())
     register_activated = Column(Boolean, default=False)
 

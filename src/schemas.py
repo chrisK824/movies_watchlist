@@ -6,6 +6,8 @@ from typing import Optional
 class Movie(BaseModel):
     title: str
     release_date: date
+    category: str
+    summary: str
 
 
 class MovieDetails(Movie):
@@ -19,6 +21,9 @@ class UserSignUp(BaseModel):
     email: str
     username: str
     password: str
+    name: str
+    surname : str
+    country : str
 
 
 class User(UserSignUp):

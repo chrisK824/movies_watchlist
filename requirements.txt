@@ -6,3 +6,4 @@ requests-cache==0.9.7
 sqlalchemy==1.4.43
 passlib==1.7.4
 python-jose==3.3.0
+alembic==1.8.1
