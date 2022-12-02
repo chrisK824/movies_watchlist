@@ -1,11 +1,13 @@
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import db_models
 import database_crud as db_crud
+import authentication as auth
 from database import SessionLocal, engine
-from schemas import UserSignUp, Movie, MovieDetails, WatchlistInput, Watchlist, WatchlistMovie
+from schemas import UserSignUp, Movie, MovieDetails, WatchlistInput, Watchlist, WatchlistMovie, Token
 from typing import List, Optional
 
 db_models.Base.metadata.create_all(bind=engine)
@@ -67,6 +69,25 @@ def create_user(user: UserSignUp, db: Session = Depends(get_db)):
         }
     except db_crud.DuplicateError as e:
         raise HTTPException(status_code=403, detail=f"{e}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
+
+@moviesWatchListAPI.post("/v1/login", response_model=Token, summary="Login as a user", tags=["Users"])
+def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """
+    Logs in a user.
+    """
+    user = db_crud.authenticate_user(db=db, user_email=form_data.username, password=form_data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid user email or passord.")
+    try:
+        access_token = auth.create_access_token(data={"sub": user.email})
+        return {
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
@@ -178,6 +199,7 @@ def get_watchlist_movies(user_email: str, watched: Optional[bool] = False, db: S
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
+
 @moviesWatchListAPI.get("/v1/watchlist/watched/movies", response_model=List[WatchlistMovie], summary="Get watched movies from user's watchlist", tags=["Watchlists"])
 def get_watchlist_watched_movies(user_email: str, db: Session = Depends(get_db)):
     """
@@ -189,6 +211,7 @@ def get_watchlist_watched_movies(user_email: str, db: Session = Depends(get_db))
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
+
 @moviesWatchListAPI.get("/v1/watchlist/upcoming/movies", response_model=List[WatchlistMovie], summary="Get upcoming movies from user's watchlist", tags=["Watchlists"])
 def get_watchlist_upcoming_movies(user_email: str, db: Session = Depends(get_db)):
     """
@@ -199,6 +222,7 @@ def get_watchlist_upcoming_movies(user_email: str, db: Session = Depends(get_db)
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
 
 @moviesWatchListAPI.get("/v1/watchlist/movies/{movie_id}", response_model=WatchlistMovie, summary="Get a movie from user's watchlist", tags=["Watchlists"])
 def get_watchlist_movie(movie_id: int, user_email: str, db: Session = Depends(get_db)):

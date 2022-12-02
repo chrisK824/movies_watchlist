@@ -1,10 +1,11 @@
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from db_models import Movie, User, Watchlist
 import schemas
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import text
-from authentication import get_password_hash, verify_password
+from authentication import get_password_hash, verify_password, oauth2_scheme, get_token_payload, BearAuthException
 
 
 class DuplicateError(Exception):
@@ -28,6 +29,36 @@ def add_user(db: Session, user: schemas.UserSignUp):
         db.rollback()
         raise DuplicateError(
             f"Email {user.email} is already attached to a registered user. Try to login.")
+
+
+def authenticate_user(db: Session, user_email: str, password: str):
+    user = db.query(User).filter(User.email == user_email).first()
+    if not user:
+        print("no user")
+        return False
+    if not verify_password(password, user.password):
+        return False
+    return user
+
+
+def get_current_user(db: Session, token: str = Depends(oauth2_scheme)):
+    try:
+        user_email = get_token_payload(token)
+    except BearAuthException:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate bearer token",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    user = db.query(User).filter(User.email == user_email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"}
+            )
+    return user
 
 
 def add_movie(db: Session, movie: schemas.Movie):

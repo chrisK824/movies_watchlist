@@ -1,4 +1,4 @@
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel
 from datetime import datetime, date
 from typing import Optional
 
@@ -13,10 +13,6 @@ class MovieDetails(Movie):
 
     class Config:
         orm_mode = True
-
-
-class MovieWatch(BaseModel):
-    value: bool
 
 
 class UserSignUp(BaseModel):
@@ -54,3 +50,8 @@ class WatchlistMovie(BaseModel):
     added_in_watchlist: datetime
     watched: bool
     watched_date: Optional[datetime] = None
+
+
+class Token(BaseModel):
+    access_token : str
+    token_type : str
