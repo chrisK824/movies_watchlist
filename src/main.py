@@ -83,7 +83,7 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     if not user:
         raise HTTPException(status_code=401, detail="Invalid user email or passord.")
     try:
-        access_token = auth.create_access_token(data={"sub": user.email})
+        access_token = auth.create_access_token(data=user.email)
         return {
             "access_token": access_token,
             "token_type": "bearer"
