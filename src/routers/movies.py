@@ -4,7 +4,6 @@ sys.path.append("..")
 from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.orm import Session
 import database_crud as db_crud
-import authentication as auth
 from schemas import Movie, MovieDetails
 from typing import List
 

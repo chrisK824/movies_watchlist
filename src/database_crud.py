@@ -69,7 +69,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
 
 
 def add_movie(db: Session, movie: schemas.Movie):
-    db_movie = Movie(title=movie.title, release_date=movie.release_date)
+    db_movie = Movie(title=movie.title, release_date=movie.release_date, category=movie.category, summary=movie.summary)
     db.add(db_movie)
     db.commit()
     db.refresh(db_movie)
