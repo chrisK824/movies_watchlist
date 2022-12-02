@@ -63,12 +63,11 @@ def get_movie(db: Session, movie_id: int):
 
 
 def delete_movie(db: Session, movie_id: int):
-    movie = db.query(Movie).filter(Movie.id == movie_id).first()
+    movie = db.query(Movie).filter(Movie.id == movie_id).delete()
     if not movie:
         raise ValueError(
             f"There is no movie with ID {movie_id}.")
     else:
-        db.delete(movie)
         db.commit()
 
 
