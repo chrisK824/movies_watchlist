@@ -109,13 +109,10 @@ def remove_movie_from_watchlist(db: Session, movie_id: int, user_email: str):
         raise ValueError(
             f"There is no user registered with email {user_email}.")
 
-    watchlist_entry = db.query(Watchlist).filter(
-        Watchlist.movie_id == movie_id).first()
+    watchlist_entry = db.query(Watchlist).filter(Watchlist.movie_id == movie_id).delete()
     if not watchlist_entry:
         raise ValueError(
             f"{user.username}, there is no movie with ID {movie_id} in your watchlist.")
-
-    db.delete(watchlist_entry)
     db.commit()
 
 
