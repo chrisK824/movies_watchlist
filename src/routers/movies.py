@@ -9,10 +9,10 @@ from schemas import Movie, MovieDetails
 from typing import List
 
 
-router = APIRouter()
+router = APIRouter(prefix="/v1")
 
 
-@router.get("/v1/movies", response_model=List[MovieDetails], summary="Get all movies", tags=["Movies"])
+@router.get("/movies", response_model=List[MovieDetails], summary="Get all movies", tags=["Movies"])
 def get_all_movies(db: Session = Depends(db_crud.get_db)):
     """
     Returns all movies.
@@ -24,7 +24,7 @@ def get_all_movies(db: Session = Depends(db_crud.get_db)):
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.post("/v1/movies", response_model=MovieDetails, summary="Add a movie", tags=["Movies"])
+@router.post("/movies", response_model=MovieDetails, summary="Add a movie", tags=["Movies"])
 def post_movie(movie: Movie, db: Session = Depends(db_crud.get_db)):
     """
     Posts a movie.
@@ -36,7 +36,7 @@ def post_movie(movie: Movie, db: Session = Depends(db_crud.get_db)):
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/v1/movies/{movie_id}", response_model=MovieDetails, summary="Get a movie by ID", tags=["Movies"])
+@router.get("/movies/{movie_id}", response_model=MovieDetails, summary="Get a movie by ID", tags=["Movies"])
 def get_movie_by_id(movie_id: int, db: Session = Depends(db_crud.get_db)):
     """
     Returns a movie by ID.
@@ -50,7 +50,7 @@ def get_movie_by_id(movie_id: int, db: Session = Depends(db_crud.get_db)):
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.delete("/v1/movies/{movie_id}", summary="Delete a movie by ID", tags=["Movies"])
+@router.delete("/movies/{movie_id}", summary="Delete a movie by ID", tags=["Movies"])
 def delete_movie_by_id(movie_id: int, db: Session = Depends(db_crud.get_db)):
     """
     Deletes a movie by ID.
@@ -65,7 +65,7 @@ def delete_movie_by_id(movie_id: int, db: Session = Depends(db_crud.get_db)):
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/v1/movies/search/", response_model=List[MovieDetails], summary="Search for movies based on title keyword", tags=["Movies"])
+@router.get("/movies/search/", response_model=List[MovieDetails], summary="Search for movies based on title keyword", tags=["Movies"])
 def movies_search(keyword: str, db: Session = Depends(db_crud.get_db)):
     """
     Returns all movies 
@@ -79,7 +79,7 @@ def movies_search(keyword: str, db: Session = Depends(db_crud.get_db)):
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/v1/movies/upcoming/", response_model=List[MovieDetails], summary="Get upcoming movies", tags=["Movies"])
+@router.get("/movies/upcoming/", response_model=List[MovieDetails], summary="Get upcoming movies", tags=["Movies"])
 def get_upcoming_movies(db: Session = Depends(db_crud.get_db)):
     """
     Returns upcoming movies.

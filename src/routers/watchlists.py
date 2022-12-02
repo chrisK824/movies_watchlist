@@ -7,10 +7,10 @@ import database_crud as db_crud
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter, HTTPException
 
-router = APIRouter()
+router = APIRouter(prefix="/v1")
 
 
-@router.post("/v1/watchlist/movies", response_model=Watchlist, summary="Add a movie in user's watchlist", tags=["Watchlists"])
+@router.post("/watchlist/movies", response_model=Watchlist, summary="Add a movie in user's watchlist", tags=["Watchlists"])
 def add_movie_to_watchlist(watchlistInput: WatchlistInput, user: User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Adds a movie in the user's watchlist
@@ -26,7 +26,7 @@ def add_movie_to_watchlist(watchlistInput: WatchlistInput, user: User = Depends(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/v1/watchlist/movies", response_model=List[WatchlistMovie], summary="Get movies from user's watchlist", tags=["Watchlists"])
+@router.get("/watchlist/movies", response_model=List[WatchlistMovie], summary="Get movies from user's watchlist", tags=["Watchlists"])
 def get_watchlist_movies(user: User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Returns movies from user's watchlist.
@@ -38,7 +38,7 @@ def get_watchlist_movies(user: User = Depends(db_crud.get_current_user), db: Ses
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/v1/watchlist/watched/movies", response_model=List[WatchlistMovie], summary="Get watched movies from user's watchlist", tags=["Watchlists"])
+@router.get("/watchlist/watched/movies", response_model=List[WatchlistMovie], summary="Get watched movies from user's watchlist", tags=["Watchlists"])
 def get_watchlist_watched_movies(user: User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Returns watched movies from user's watchlist.
@@ -50,7 +50,7 @@ def get_watchlist_watched_movies(user: User = Depends(db_crud.get_current_user),
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/v1/watchlist/upcoming/movies", response_model=List[WatchlistMovie], summary="Get upcoming movies from user's watchlist", tags=["Watchlists"])
+@router.get("/watchlist/upcoming/movies", response_model=List[WatchlistMovie], summary="Get upcoming movies from user's watchlist", tags=["Watchlists"])
 def get_watchlist_upcoming_movies(user: User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Returns upcoming movies from user's watchlist.
@@ -62,7 +62,7 @@ def get_watchlist_upcoming_movies(user: User = Depends(db_crud.get_current_user)
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/v1/watchlist/movies/{movie_id}", response_model=WatchlistMovie, summary="Get a movie from user's watchlist", tags=["Watchlists"])
+@router.get("/watchlist/movies/{movie_id}", response_model=WatchlistMovie, summary="Get a movie from user's watchlist", tags=["Watchlists"])
 def get_watchlist_movie(movie_id: int, user: User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Returns a movie from user's watchlist.
@@ -76,7 +76,7 @@ def get_watchlist_movie(movie_id: int, user: User = Depends(db_crud.get_current_
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.delete("/v1/watchlist/movies/{movie_id}", summary="Remove a movie from user's watchlist", tags=["Watchlists"])
+@router.delete("/watchlist/movies/{movie_id}", summary="Remove a movie from user's watchlist", tags=["Watchlists"])
 def remove_watchlist_movie(movie_id: int, user: User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Returns movies from user's watchlist.
@@ -92,7 +92,7 @@ def remove_watchlist_movie(movie_id: int, user: User = Depends(db_crud.get_curre
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.put("/v1/watchlist/movies/{movie_id}/watch", response_model=WatchlistMovie, summary="Mark a movie from user's watchlist as watched", tags=["Watchlists"])
+@router.put("/watchlist/movies/{movie_id}/watch", response_model=WatchlistMovie, summary="Mark a movie from user's watchlist as watched", tags=["Watchlists"])
 def watch_movie(movie_id: int, user: User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Marks a movie from user's watchlist

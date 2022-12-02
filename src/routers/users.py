@@ -8,10 +8,10 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends, APIRouter, HTTPException
 
-router = APIRouter()
+router = APIRouter(prefix="/v1")
 
 
-@router.post("/v1/signup", summary="Register a user", tags=["Users"])
+@router.post("/signup", summary="Register a user", tags=["Users"])
 def create_user(user: UserSignUp, db: Session = Depends(db_crud.get_db)):
     """
     Registers a user.
@@ -29,7 +29,7 @@ def create_user(user: UserSignUp, db: Session = Depends(db_crud.get_db)):
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.post("/v1/token", response_model=Token, summary="Login as a user", tags=["Users"])
+@router.post("/token", response_model=Token, summary="Login as a user", tags=["Users"])
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(db_crud.get_db)):
     """
     Logs in a user.
