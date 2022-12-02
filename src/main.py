@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import db_models
@@ -8,13 +8,8 @@ import database_crud as db_crud
 import authentication as auth
 from database import engine
 from schemas import UserSignUp, User, Movie, MovieDetails, WatchlistInput, Watchlist, WatchlistMovie, Token
-from typing import List, Optional
-
-db_models.Base.metadata.create_all(bind=engine)
-
-
-
-
+from typing import List
+from routers import users, movies, watchlists
 
 description = """
 Movies watchlist API helps people
@@ -48,222 +43,13 @@ moviesWatchListAPI = FastAPI(
     redoc_url="/v1/redocs"
 )
 
+db_models.Base.metadata.create_all(bind=engine)
+
 moviesWatchListAPI.add_middleware(CORSMiddleware, allow_origins=['*'])
 
-
-@moviesWatchListAPI.post("/v1/signup", summary="Register a user", tags=["Users"])
-def create_user(user: UserSignUp, db: Session = Depends(db_crud.get_db)):
-    """
-    Registers a user.
-    """
-    try:
-        db_crud.add_user(db, user)
-        # TODO : actually send a verification email
-        return {
-            "resut": "You have successfully signed up. A verification email has been sent to your email address with a link to activate your acount."
-        }
-    except db_crud.DuplicateError as e:
-        raise HTTPException(status_code=403, detail=f"{e}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.post("/v1/login", response_model=Token, summary="Login as a user", tags=["Users"])
-def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(db_crud.get_db)):
-    """
-    Logs in a user.
-    """
-    user = db_crud.authenticate_user(db=db, user_email=form_data.username, password=form_data.password)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid user email or passord.")
-    try:
-        access_token = auth.create_access_token(data=user.email)
-        return {
-            "access_token": access_token,
-            "token_type": "bearer"
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.get("/v1/movies", response_model=List[MovieDetails], summary="Get all movies", tags=["Movies"])
-def get_all_movies(db: Session = Depends(db_crud.get_db)):
-    """
-    Returns all movies.
-    """
-    try:
-        return db_crud.get_movies(db)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.post("/v1/movies", response_model=MovieDetails, summary="Add a movie", tags=["Movies"])
-def post_movie(movie: Movie, db: Session = Depends(db_crud.get_db)):
-    """
-    Posts a movie.
-    """
-    try:
-        return db_crud.add_movie(db, movie)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.get("/v1/movies/{movie_id}", response_model=MovieDetails, summary="Get a movie by ID", tags=["Movies"])
-def get_movie_by_id(movie_id: int, db: Session = Depends(db_crud.get_db)):
-    """
-    Returns a movie by ID.
-    """
-    try:
-        return db_crud.get_movie(db, movie_id=movie_id)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=f"{e}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.delete("/v1/movies/{movie_id}", summary="Delete a movie by ID", tags=["Movies"])
-def delete_movie_by_id(movie_id: int, db: Session = Depends(db_crud.get_db)):
-    """
-    Deletes a movie by ID.
-    """
-    try:
-        db_crud.delete_movie(db, movie_id=movie_id)
-        return {"result": f"Movie with ID {movie_id} has been deleted successfully."}
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=f"{e}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.get("/v1/movies/search/", response_model=List[MovieDetails], summary="Search for movies based on title keyword", tags=["Movies"])
-def movies_search(keyword: str, db: Session = Depends(db_crud.get_db)):
-    """
-    Returns all movies 
-    that include the given keyword
-    in their title
-    """
-    try:
-        return db_crud.search_movies(db, keyword=keyword)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.get("/v1/movies/upcoming/", response_model=List[MovieDetails], summary="Get upcoming movies", tags=["Movies"])
-def get_upcoming_movies(db: Session = Depends(db_crud.get_db)):
-    """
-    Returns upcoming movies.
-    """
-    try:
-        return db_crud.get_upcoming_movies(db)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.post("/v1/watchlist/movies", response_model=Watchlist, summary="Add a movie in user's watchlist", tags=["Watchlists"])
-def add_movie_to_watchlist(watchlistInput: WatchlistInput, user : User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
-    """
-    Adds a movie in the user's watchlist
-    """
-    try:
-        return db_crud.add_movie_to_watchlist(db, movie_id=watchlistInput.movie_id, user_email=user.email)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=f"{e}")
-    except db_crud.DuplicateError as e:
-        raise HTTPException(status_code=403, detail=f"{e}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.get("/v1/watchlist/movies", response_model=List[WatchlistMovie], summary="Get movies from user's watchlist", tags=["Watchlists"])
-def get_watchlist_movies(user : User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
-    """
-    Returns movies from user's watchlist.
-    """
-    try:
-        return db_crud.get_watchlist_movies(db, user.email)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.get("/v1/watchlist/watched/movies", response_model=List[WatchlistMovie], summary="Get watched movies from user's watchlist", tags=["Watchlists"])
-def get_watchlist_watched_movies(user : User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
-    """
-    Returns watched movies from user's watchlist.
-    """
-    try:
-        return db_crud.get_watchlist_watched_movies(db, user.email)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.get("/v1/watchlist/upcoming/movies", response_model=List[WatchlistMovie], summary="Get upcoming movies from user's watchlist", tags=["Watchlists"])
-def get_watchlist_upcoming_movies(user : User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
-    """
-    Returns upcoming movies from user's watchlist.
-    """
-    try:
-        return db_crud.get_watchlist_upcoming_movies(db, user.email)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.get("/v1/watchlist/movies/{movie_id}", response_model=WatchlistMovie, summary="Get a movie from user's watchlist", tags=["Watchlists"])
-def get_watchlist_movie(movie_id: int, user : User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
-    """
-    Returns a movie from user's watchlist.
-    """
-    try:
-        return db_crud.get_watchlist_movie(db, movie_id, user.email)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=f"{e}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.delete("/v1/watchlist/movies/{movie_id}", summary="Remove a movie from user's watchlist", tags=["Watchlists"])
-def remove_watchlist_movie(movie_id: int, user : User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
-    """
-    Returns movies from user's watchlist.
-    """
-    try:
-        db_crud.remove_movie_from_watchlist(
-            db, movie_id=movie_id, user_email=user.email)
-        return {"result": f"Movie with ID {movie_id} has been removed from your watchlist."}
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=f"{e}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
-
-
-@moviesWatchListAPI.put("/v1/watchlist/movies/{movie_id}/watch", response_model=WatchlistMovie, summary="Mark a movie from user's watchlist as watched", tags=["Watchlists"])
-def watch_movie(movie_id: int, user : User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
-    """
-    Marks a movie from user's watchlist
-    as watched
-    """
-    try:
-        return db_crud.watch_movie(db, movie_id, user.email)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=f"{e}")
-    except db_crud.TooSoonException as e:
-        raise HTTPException(status_code=403, detail=f"{e}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+moviesWatchListAPI.include_router(users.router)
+moviesWatchListAPI.include_router(movies.router)
+moviesWatchListAPI.include_router(watchlists.router)
 
 
 if __name__ == '__main__':
