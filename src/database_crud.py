@@ -27,7 +27,10 @@ def add_user(db: Session, user: schemas.UserSignUp):
     user = User(
         email=user.email,
         username=user.username,
-        password=get_password_hash(user.password)
+        password=get_password_hash(user.password),
+        name=user.name,
+        surname=user.surname,
+        country=user.country
     )
     try:
         db.add(user)
