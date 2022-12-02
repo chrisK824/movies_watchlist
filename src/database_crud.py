@@ -4,7 +4,7 @@ import schemas
 from passlib.context import CryptContext
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import text
+from sqlalchemy import text, update
 
 
 class DuplicateError(Exception):
@@ -123,11 +123,20 @@ def remove_movie_from_watchlist(db: Session, movie_id: int, user_email: str):
 def get_watchlist_movies(db: Session, user_email: str, watched: bool):
     query = """SELECT * FROM 
     movies JOIN watchlists ON watchlists.movie_id = movies.id 
-    WHERE watchlists.user_email = :user_email AND 
-    watchlists.watched = :watched;"""
+    WHERE watchlists.user_email = :user_email;"""
 
     movies = list(db.execute(
-        text(query), [{"user_email": user_email, "watched": watched}]).fetchall())
+        text(query), [{"user_email": user_email}]).fetchall())
+    return movies
+
+def get_watchlist_watched_movies(db: Session, user_email: str):
+    query = """SELECT * FROM 
+    movies JOIN watchlists ON watchlists.movie_id = movies.id 
+    WHERE watchlists.user_email = :user_email AND 
+    watchlists.watched = True;"""
+
+    movies = list(db.execute(
+        text(query), [{"user_email": user_email}]).fetchall())
     return movies
 
 def get_watchlist_movie(db: Session, movie_id: int, user_email: str):
@@ -147,3 +156,33 @@ def get_watchlist_movie(db: Session, movie_id: int, user_email: str):
         raise ValueError(
             f"{user.username}, there is no movie with ID {movie_id} in your watchlist.")
     return movie
+
+def watch_movie(db: Session, movie_id: int, user_email: str):
+    user = db.query(User).filter(User.email == user_email).first()
+    if not user:
+        raise ValueError(
+            f"There is no user registered with email {user_email}.")
+
+    
+    watchlist_entry = db.query(Watchlist).filter(
+        Watchlist.movie_id == movie_id).first()
+    if not watchlist_entry:
+        raise ValueError(
+            f"{user.username}, there is no movie with ID {movie_id} in your watchlist.")
+    
+    movie_release_date = db.query(Movie.release_date).filter(Movie.id == movie_id).first()
+    if movie_release_date[0] > datetime.now():
+        raise TooSoonException(f"{user.username} you cannot watch a not released movie, be patient!")
+    
+    watchlist_entry.watched = True
+    watchlist_entry.watched_date = datetime.now()
+    db.commit()
+
+    query = """SELECT * FROM 
+    movies JOIN watchlists ON watchlists.movie_id = movies.id 
+    WHERE watchlists.user_email = :user_email AND 
+    movies.id = :movie_id;"""
+
+    watchlist_entry = db.execute(
+        text(query), [{"user_email": user_email, "movie_id": movie_id}]).fetchone()
+    return watchlist_entry
