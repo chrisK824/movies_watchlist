@@ -139,6 +139,17 @@ def get_watchlist_watched_movies(db: Session, user_email: str):
         text(query), [{"user_email": user_email}]).fetchall())
     return movies
 
+def get_watchlist_upcoming_movies(db: Session, user_email: str):
+    query = """SELECT * FROM 
+    movies JOIN watchlists ON watchlists.movie_id = movies.id 
+    WHERE watchlists.user_email = :user_email 
+    AND movies.release_date > datetime(date('now'))
+    """
+
+    movies = list(db.execute(
+        text(query), [{"user_email": user_email}]).fetchall())
+    return movies
+
 def get_watchlist_movie(db: Session, movie_id: int, user_email: str):
     query = """SELECT * FROM 
     movies JOIN watchlists ON watchlists.movie_id = movies.id 

@@ -179,7 +179,7 @@ def get_watchlist_movies(user_email: str, watched: Optional[bool] = False, db: S
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 @moviesWatchListAPI.get("/v1/watchlist/watched/movies", response_model=List[WatchlistMovie], summary="Get watched movies from user's watchlist", tags=["Watchlists"])
-def get_watchlist_movies(user_email: str, db: Session = Depends(get_db)):
+def get_watchlist_watched_movies(user_email: str, db: Session = Depends(get_db)):
     """
     Returns watched movies from user's watchlist.
     """
@@ -189,16 +189,16 @@ def get_watchlist_movies(user_email: str, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
-# @moviesWatchListAPI.get("/v1/watchlist/movies", response_model=List[WatchlistMovie], summary="Get movies from user's watchlist", tags=["Watchlists"])
-# def get_watchlist_movies(user_email: str, watched: Optional[bool] = False, db: Session = Depends(get_db)):
-#     """
-#     Returns movies from user's watchlist.
-#     """
-#     try:
-#         return db_crud.get_watchlist_movies(db, user_email, watched)
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+@moviesWatchListAPI.get("/v1/watchlist/upcoming/movies", response_model=List[WatchlistMovie], summary="Get upcoming movies from user's watchlist", tags=["Watchlists"])
+def get_watchlist_upcoming_movies(user_email: str, db: Session = Depends(get_db)):
+    """
+    Returns upcoming movies from user's watchlist.
+    """
+    try:
+        return db_crud.get_watchlist_upcoming_movies(db, user_email)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 @moviesWatchListAPI.get("/v1/watchlist/movies/{movie_id}", response_model=WatchlistMovie, summary="Get a movie from user's watchlist", tags=["Watchlists"])
 def get_watchlist_movie(movie_id: int, user_email: str, db: Session = Depends(get_db)):
@@ -240,6 +240,8 @@ def watch_movie(movie_id: int, user_email: str, db: Session = Depends(get_db)):
         return db_crud.watch_movie(db, movie_id, user_email)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=f"{e}")
+    except db_crud.TooSoonException as e:
+        raise HTTPException(status_code=403, detail=f"{e}")
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
