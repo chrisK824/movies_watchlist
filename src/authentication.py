@@ -18,8 +18,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 load_dotenv()
 SECRET_KEY = os.environ["SECRET_KEY"]
 SENDGRID_API_KEY = os.environ["SENDGRID_API_KEY"]
-ALGORITHM = os.environ["ALGORITHM"]
-ACCESS_TOKEN_EXPIRE_MINUTES = os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"]
+ALGORITHM = str(os.environ["ALGORITHM"])
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"])
 
 
 def verify_password(plain_password, hashed_password):
