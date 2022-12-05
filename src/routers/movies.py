@@ -2,22 +2,23 @@ import sys
 sys.path.append("..")
 
 from fastapi import Depends, APIRouter, HTTPException
+from fastapi_pagination import paginate, Page
 from sqlalchemy.orm import Session
-import database_crud as db_crud
+
 from schemas import Movie, MovieDetails
-from typing import List
+import database_crud as db_crud
 
 
 router = APIRouter(prefix="/v1")
 
 
-@router.get("/movies", response_model=List[MovieDetails], summary="Get all movies", tags=["Movies"])
+@router.get("/movies", response_model=Page[MovieDetails], summary="Get all movies", tags=["Movies"])
 def get_all_movies(db: Session = Depends(db_crud.get_db)):
     """
     Returns all movies.
     """
     try:
-        return db_crud.get_movies(db)
+        return paginate(db_crud.get_movies(db))
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
@@ -64,7 +65,7 @@ def delete_movie_by_id(movie_id: int, db: Session = Depends(db_crud.get_db)):
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/movies/search/", response_model=List[MovieDetails], summary="Search for movies based on title keyword", tags=["Movies"])
+@router.get("/movies/search/", response_model=Page[MovieDetails], summary="Search for movies based on title keyword", tags=["Movies"])
 def movies_search(keyword: str, db: Session = Depends(db_crud.get_db)):
     """
     Returns all movies 
@@ -72,19 +73,19 @@ def movies_search(keyword: str, db: Session = Depends(db_crud.get_db)):
     in their title
     """
     try:
-        return db_crud.search_movies(db, keyword=keyword)
+        return paginate(db_crud.search_movies(db, keyword=keyword))
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/movies/upcoming/", response_model=List[MovieDetails], summary="Get upcoming movies", tags=["Movies"])
+@router.get("/movies/upcoming/", response_model=Page[MovieDetails], summary="Get upcoming movies", tags=["Movies"])
 def get_upcoming_movies(db: Session = Depends(db_crud.get_db)):
     """
     Returns upcoming movies.
     """
     try:
-        return db_crud.get_upcoming_movies(db)
+        return paginate(db_crud.get_upcoming_movies(db))
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")

@@ -1,11 +1,13 @@
 import sys
 sys.path.append("..")
 
-from typing import List
-from schemas import User, WatchlistInput, Watchlist, WatchlistMovie
-import database_crud as db_crud
-from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+from fastapi_pagination import paginate, Page
+
+import database_crud as db_crud
+from schemas import User, WatchlistInput, Watchlist, WatchlistMovie
 
 router = APIRouter(prefix="/v1")
 
@@ -26,37 +28,37 @@ def add_movie_to_watchlist(watchlistInput: WatchlistInput, user: User = Depends(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/watchlist/movies", response_model=List[WatchlistMovie], summary="Get movies from user's watchlist", tags=["Watchlists"])
+@router.get("/watchlist/movies", response_model=Page[WatchlistMovie], summary="Get movies from user's watchlist", tags=["Watchlists"])
 def get_watchlist_movies(user: User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Returns movies from user's watchlist.
     """
     try:
-        return db_crud.get_watchlist_movies(db, user.email)
+        return paginate(db_crud.get_watchlist_movies(db, user.email))
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/watchlist/watched/movies", response_model=List[WatchlistMovie], summary="Get watched movies from user's watchlist", tags=["Watchlists"])
+@router.get("/watchlist/watched/movies", response_model=Page[WatchlistMovie], summary="Get watched movies from user's watchlist", tags=["Watchlists"])
 def get_watchlist_watched_movies(user: User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Returns watched movies from user's watchlist.
     """
     try:
-        return db_crud.get_watchlist_watched_movies(db, user.email)
+        return paginate(db_crud.get_watchlist_watched_movies(db, user.email))
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.get("/watchlist/upcoming/movies", response_model=List[WatchlistMovie], summary="Get upcoming movies from user's watchlist", tags=["Watchlists"])
+@router.get("/watchlist/upcoming/movies", response_model=Page[WatchlistMovie], summary="Get upcoming movies from user's watchlist", tags=["Watchlists"])
 def get_watchlist_upcoming_movies(user: User = Depends(db_crud.get_current_user), db: Session = Depends(db_crud.get_db)):
     """
     Returns upcoming movies from user's watchlist.
     """
     try:
-        return db_crud.get_watchlist_upcoming_movies(db, user.email)
+        return paginate(db_crud.get_watchlist_upcoming_movies(db, user.email))
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")

@@ -1,14 +1,9 @@
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import FastAPI
+from fastapi_pagination import add_pagination
 from starlette.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 import db_models
-import database_crud as db_crud
-import authentication as auth
 from database import engine
-from schemas import UserSignUp, User, Movie, MovieDetails, WatchlistInput, Watchlist, WatchlistMovie, Token
-from typing import List
 from routers import users, movies, watchlists
 
 description = """
@@ -51,6 +46,7 @@ moviesWatchListAPI.include_router(users.router)
 moviesWatchListAPI.include_router(movies.router)
 moviesWatchListAPI.include_router(watchlists.router)
 
+add_pagination(moviesWatchListAPI)
 
 if __name__ == '__main__':
     uvicorn.run(moviesWatchListAPI, host="0.0.0.0", port=9999)

@@ -1,12 +1,13 @@
 import sys
 sys.path.append("..")
 
-from schemas import UserSignUp, Token
-import authentication as auth
-import database_crud as db_crud
+from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import Depends, APIRouter, HTTPException
+
+import authentication as auth
+import database_crud as db_crud
+from schemas import UserSignUp, Token
 
 router = APIRouter(prefix="/v1")
 
