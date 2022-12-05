@@ -6,8 +6,8 @@ from typing import Optional
 class Movie(BaseModel):
     title: str
     release_date: date
-    category : str
-    summary : str
+    category: str
+    summary: str
 
 
 class MovieDetails(Movie):
@@ -22,8 +22,8 @@ class UserSignUp(BaseModel):
     username: str
     password: str
     name: str
-    surname : str
-    country : str
+    surname: str
+    country: str
 
 
 class User(UserSignUp):
@@ -57,5 +57,5 @@ class WatchlistMovie(BaseModel):
 
 
 class Token(BaseModel):
-    access_token : str
-    token_type : str
+    access_token: str
+    token_type: str

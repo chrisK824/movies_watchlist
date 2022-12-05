@@ -8,6 +8,7 @@ from sqlalchemy import text
 from authentication import get_password_hash, verify_password, oauth2_scheme, get_token_payload, BearAuthException
 from database import SessionLocal
 
+
 class DuplicateError(Exception):
     pass
 
@@ -22,6 +23,7 @@ def get_db():
         yield movies_watchlists_db
     finally:
         movies_watchlists_db.close()
+
 
 def add_user(db: Session, user: schemas.UserSignUp):
     user = User(
@@ -39,6 +41,22 @@ def add_user(db: Session, user: schemas.UserSignUp):
         db.rollback()
         raise DuplicateError(
             f"Email {user.email} is already attached to a registered user. Try to login.")
+
+
+def get_user(db: Session, email: str):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        return False
+    return user
+
+
+def activate_user(db: Session, user: User):
+    user = db.query(User).filter(User.email == user.email).first()
+    if not user:
+        return False
+    user.register_activated = True
+    db.commit()
+    return user
 
 
 def authenticate_user(db: Session, user_email: str, password: str):
@@ -67,12 +85,13 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"}
-            )
+        )
     return user
 
 
 def add_movie(db: Session, movie: schemas.Movie):
-    db_movie = Movie(title=movie.title, release_date=movie.release_date, category=movie.category, summary=movie.summary)
+    db_movie = Movie(title=movie.title, release_date=movie.release_date,
+                     category=movie.category, summary=movie.summary)
     db.add(db_movie)
     db.commit()
     db.refresh(db_movie)

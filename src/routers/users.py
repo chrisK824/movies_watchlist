@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..")
 
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException, Request
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -13,16 +13,40 @@ router = APIRouter(prefix="/v1")
 
 
 @router.post("/signup", summary="Register a user", tags=["Users"])
-def create_user(user: UserSignUp, db: Session = Depends(db_crud.get_db)):
+def create_user(user: UserSignUp, request: Request, db: Session = Depends(db_crud.get_db)):
     """
     Registers a user.
     """
     try:
         db_crud.add_user(db, user)
-        # TODO : actually send a verification email
+        base_url = str(request.base_url)
+        base_url = base_url[:-1]
+        url = f"{base_url}/v1/account_activation"
+        auth.send_activation_email(user.email, url)
         return {
             "resut": "You have successfully signed up. A verification email has been sent to your email address with a link to activate your acount."
         }
+    except db_crud.DuplicateError as e:
+        raise HTTPException(status_code=403, detail=f"{e}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
+
+@router.get("/account_activation", summary="Activate a user", tags=["Users"])
+def activate_user(email: str, db: Session = Depends(db_crud.get_db)):
+    """
+    Activates a user.
+    """
+    try:
+        user = db_crud.get_user(db, email=email)
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User not found for email {email}")
+        if db_crud.activate_user(db, user):
+            return {
+                "resut": f"{user.username} your account has now been activated!"
+            }
+        else:
+            raise HTTPException(status_code=404, detail=f"User not found for email {email}")
     except db_crud.DuplicateError as e:
         raise HTTPException(status_code=403, detail=f"{e}")
     except Exception as e:
