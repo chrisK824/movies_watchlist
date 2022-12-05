@@ -37,16 +37,14 @@ def activate_user(email: str, db: Session = Depends(db_crud.get_db)):
     """
     Activates a user.
     """
+    user = db_crud.get_user(db, email=email)
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User not found for email {email}")
     try:
-        user = db_crud.get_user(db, email=email)
-        if not user:
-            raise HTTPException(status_code=404, detail=f"User not found for email {email}")
         if db_crud.activate_user(db, user):
             return {
                 "resut": f"{user.username} your account has now been activated!"
             }
-        else:
-            raise HTTPException(status_code=404, detail=f"User not found for email {email}")
     except db_crud.DuplicateError as e:
         raise HTTPException(status_code=403, detail=f"{e}")
     except Exception as e:
