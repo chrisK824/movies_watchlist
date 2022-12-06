@@ -32,7 +32,7 @@ def create_user(user: UserSignUp, request: Request, db: Session = Depends(db_cru
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
-@router.get("/account_activation", summary="Activate a user", tags=["Users"])
+@router.get("/account_activation", summary="Activate a user", tags=["Users"], include_in_schema=False)
 def activate_user(email: str, db: Session = Depends(db_crud.get_db)):
     """
     Activates a user.
