@@ -2,7 +2,7 @@
 
 #####  Stack 
 * fastAPI web framework
-* sqlite3 database
+* postgresql database
 
 ##### Docker installation and run server
 * `docker build -t movies_watchlist .`
