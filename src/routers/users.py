@@ -52,7 +52,7 @@ def activate_user(email: str, db: Session = Depends(db_crud.get_db)):
             status_code=500, detail=f"An unexpected error occured. Report this message to support: {e}")
 
 
-@router.post("/token", response_model=Token, summary="Login as a user", tags=["Users"])
+@router.post("/token", response_model=Token, summary="Login as a user", tags=["Users"], include_in_schema=False)
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(db_crud.get_db)):
     """
     Logs in a user.
