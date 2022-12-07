@@ -14,7 +14,6 @@ pipeline {
                 sh "cp -v ./package/control ${deb11_name}_${deb11_version}/DEBIAN/"
                 sh "cp -v ./package/postinst ${deb11_name}_${deb11_version}/DEBIAN/"
                 sh "cp -vr ./src/* ${deb11_name}_${deb11_version}/usr/share/movies-watchlist/"
-                sh "cp -v ./requirements.txt ${deb11_name}_${deb11_version}/usr/share/movies-watchlist/requirements.txt"
                 sh "chmod -R 755 ${deb11_name}_${deb11_version}"
                 sh "dpkg-deb --build ${deb11_name}_${deb11_version}"
             }
