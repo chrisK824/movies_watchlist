@@ -3,7 +3,6 @@ sys.path.append("..")
 
 from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 from fastapi_pagination import paginate, Page
 
 import database_crud as db_crud

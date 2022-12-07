@@ -1,7 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime, date
 from typing import Optional
-
 
 class Movie(BaseModel):
     title: str
@@ -18,7 +17,7 @@ class MovieDetails(Movie):
 
 
 class UserSignUp(BaseModel):
-    email: str
+    email: EmailStr
     username: str
     password: str
     name: str
